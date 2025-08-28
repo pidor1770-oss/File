@@ -1,4 +1,4 @@
--- Улучшенный Game Breaker Toolkit с компактным GUI
+-- Улучшенный Game Breaker Toolkit с центрированным GUI
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -6,14 +6,17 @@ local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
+-- Получаем размер экрана
+local screenSize = workspace.CurrentCamera.ViewportSize
+
 -- Создаем GUI для управления эксплоитом
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Parent = game.CoreGui
 
--- Основной фрейм (компактный, в виде полоски)
+-- Основной фрейм (компактный, в виде полоски) - размещаем по центру
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 200, 0, 40)
-MainFrame.Position = UDim2.new(0, 10, 0, 10)
+MainFrame.Position = UDim2.new(0.5, -100, 0.1, 0)  -- Центрируем по горизонтали, 10% от верха
 MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 MainFrame.BorderSizePixel = 2
 MainFrame.BorderColor3 = Color3.fromRGB(100, 0, 0)
@@ -260,7 +263,7 @@ Title.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then
         dragInput = input
     end
-end
+end)
 
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
@@ -286,4 +289,4 @@ RunService.Stepped:Connect(function()
     end
 end)
 
-warn("Improved Game Breaker Toolkit loaded! Click the title to expand/collapse.")
+warn("Game Breaker Toolkit loaded! Click the title to expand/collapse.")
