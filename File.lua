@@ -1,8 +1,11 @@
--- Версия с плавно меняющимся цветом ESP
+-- Версия с плавно меняющимся одинаковым цветом для всех ESP
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
+
+-- Глобальный цвет для всех ESP
+local globalHue = 0
 
 -- Таблица для хранения ESP объектов
 local ESPTable = {}
@@ -23,15 +26,11 @@ local function UpdateESP()
                 esp.Name = "EspBox"
                 esp.Parent = character
                 
-                ESPTable[player] = {
-                    object = esp,
-                    hue = math.random()  -- Начальный случайный оттенок
-                }
+                ESPTable[player] = esp
             end
                 
             -- Получаем текущий ESP
-            local espData = ESPTable[player]
-            local esp = espData.object
+            local esp = ESPTable[player]
             
             -- Адаптируем размер ESP к телу персонажа
             if humanoid and humanoid.RigType == Enum.HumanoidRigType.R6 then
@@ -40,20 +39,20 @@ local function UpdateESP()
                 esp.Size = Vector3.new(3, 6, 3)    -- Размер для R15
             end
             
-            -- Плавно меняем оттенок со временем
-            espData.hue = (espData.hue + 0.001) % 1  -- Медленное изменение оттенка
-            
-            -- Устанавливаем цвет с плавным переходом
-            esp.Color3 = Color3.fromHSV(espData.hue, 1, 1)
-            
-            -- Легкая пульсация прозрачности
-            esp.Transparency = 0.3 + math.sin(tick() * 2) * 0.1
+            -- Устанавливаем одинаковый цвет для всех ESP
+            esp.Color3 = Color3.fromHSV(globalHue, 1, 1)
+            esp.Transparency = 0.3  -- Фиксированная прозрачность
         elseif ESPTable[player] and (not player.Character or not player.Character:FindFirstChild("Humanoid")) then
             -- Удаляем ESP если игрок больше не существует или не имеет персонажа
-            ESPTable[player].object:Destroy()
+            ESPTable[player]:Destroy()
             ESPTable[player] = nil
         end
     end
+end
+
+-- Функция для плавного изменения глобального цвета
+local function UpdateGlobalColor()
+    globalHue = (globalHue + 0.001) % 1  -- Медленное изменение оттенка
 end
 
 -- Функция проверки видимости (не через стены)
@@ -95,8 +94,28 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Обновляем ESP каждый кадр для плавного изменения цвета
+-- Обновляем ESP каждый кадр
 RunService.RenderStepped:Connect(UpdateESP)
 
-print("ESP с плавно меняющимся цветом и аимбот активированы!")
-print("Цвет ESP плавно перетекает через все оттенки радуги")
+-- Обновляем глобальный цвет каждый кадр
+RunService.RenderStepped:Connect(UpdateGlobalColor)
+
+-- Обработчик для новых игроков
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function(character)
+        wait(1)  -- Ждем полной загрузки персонажа
+        if player ~= LocalPlayer and character:FindFirstChild("Humanoid") then
+            local esp = Instance.new("BoxHandleAdornment")
+            esp.Adornee = character
+            esp.ZIndex = 0
+            esp.AlwaysOnTop = true
+            esp.Name = "EspBox"
+            esp.Parent = character
+            
+            ESPTable[player] = esp
+        end
+    end)
+end)
+
+print("ESP с плавно меняющимся одинаковым цветом и аимбот активированы!")
+print("У всех игроков одинаковый цвет ESP, который плавно меняется")
